@@ -31,15 +31,9 @@
     };
   };
 
-  outputs = {
-    inputs,
-    nixos-raspberrypi,
-    disko,
-    ...
-  }: {
-    installerImages = let
-      baseRpi5 = nixos-raspberrypi.installerImages.rpi5;
-      rpi5 = baseRpi5.extendModules {
+  outputs = {nixos-raspberrypi, ...}: {
+    installerImages = {
+      rpi5 = nixos-raspberrypi.installerImages.rpi5.extendModules {
         modules = [
           {
             users.users.nixos.openssh.authorizedKeys.keys = [
@@ -51,8 +45,6 @@
           }
         ];
       };
-    in {
-      rpi5 = rpi5;
     };
 
     # nixosConfigurations = {
