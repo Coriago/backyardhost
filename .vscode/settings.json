@@ -1,16 +1,4 @@
 {
     "nix.enableLanguageServer": true,
     "nix.serverPath": "nixd",
-    "nix.serverSettings": {
-        "nixd": {
-            "formatting": {
-                "command": [
-                    "alejandra"
-                ],
-            },
-            "nixpkgs": {
-                "expr": "import <nixpkgs> {}"
-            },
-        }
-    }
 }
