@@ -1,3 +1,22 @@
 {
-    "nixEnvSelector.nixFile": "${workspaceFolder}/flake.nix"
+    "nixEnvSelector.nixFile": "${workspaceFolder}/flake.nix",
+    "nix.enableLanguageServer": true,
+    "nix.serverPath": "nixd",
+    "nix.serverSettings": {
+        "nixd": {
+            "formatting": {
+                "command": [
+                    "alejandra"
+                ],
+            },
+            "options": {
+                "flake-parts": {
+                    "expr": "(builtins.getFlake \"${workspaceFolder}\").debug.options"
+                },
+                "flake-parts2": {
+                    "expr": "(builtins.getFlake \"${workspaceFolder}\").currentSystem.options"
+                }
+            },
+        },
+    }
 }
