@@ -1,14 +1,8 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    flake-parts = {
-      url = "github:hercules-ci/flake-parts";
-      inputs.nixpkgs-lib.follows = "nixpkgs";
-    };
-    rust-overlay.url = "github:oxalica/rust-overlay";
-    crane.url = "github:ipetkov/crane";
-    crane.inputs.nixpkgs.follows = "nixpkgs";
-    treefmt-nix.url = "github:numtide/treefmt-nix";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    rust-flake.url = "github:juspay/rust-flake";
   };
 
   outputs = inputs:
@@ -18,52 +12,47 @@
         "aarch64-linux"
       ];
       imports = [
-        inputs.treefmt-nix.flakeModule
-        ./nix/flake-module.nix
+        inputs.rust-flake.flakeModules.default
+        inputs.rust-flake.flakeModules.nixpkgs
       ];
       debug = true;
 
-      perSystem = {config, self', pkgs, system, ...}: {
-        _module.args.pkgs = import inputs.nixpkgs {
-          inherit system;
-          overlays = [
-            inputs.rust-overlay.overlays.default
-          ];
-        };
-
-        treefmt.config = {
-          projectRootFile = "flake.nix";
-          programs = {
-            nixpkgs-fmt.enable = true;
-            rustfmt.enable = true;
-            leptosfmt.enable = true;
-          };
-        };
-
-        packages.default = self'.packages.leptos-fullstack;
-
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [
-            config.treefmt.build.devShell
-            self'.devShells.leptos-fullstack
-          ];
-          nativeBuildInputs = with pkgs; [
-            # Nix
-            nixd
-            alejandra
-
-            # Just
-            just
-            just-lsp
-
-            just
-            cargo-watch
-
-            # NATS
-            nats-top
-            natscli
-          ];
-        };
+      perSystem = { self', ... }: {
+        devShells.default = self'.devShells.rust;
+        packages.default = self'.packages.single-crate;
       };
+      # perSystem = {pkgs, ...}: {
+      #   devShells.default = pkgs.mkShell {
+      #     nativeBuildInputs = with pkgs; [
+      #       # Nix
+      #       nixd
+      #       alejandra
+
+      #       # Just
+      #       just
+      #       just-lsp
+
+      #       # Rust toolchain
+      #       rustc
+      #       cargo
+      #       rust-analyzer
+      #       clippy
+      #       rustfmt
+      #       cargo-leptos
+
+      #       # NATS
+      #       nats-top
+      #       natscli
+      #     ];
+
+      #     RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+          
+
+      #     shellHook = ''
+      #       echo "Backyardhost Development Environment"
+      #       echo "Run 'just' to see available recipes"
+      #     '';
+      #   };
+      # };
     };
 }
