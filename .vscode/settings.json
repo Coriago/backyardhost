@@ -1,4 +1,3 @@
 {
-    "nix.enableLanguageServer": true,
-    "nix.serverPath": "nixd",
+    "nixEnvSelector.nixFile": "${workspaceFolder}/flake.nix"
 }
