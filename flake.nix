@@ -13,43 +13,81 @@
         "x86_64-linux"
         "aarch64-linux"
       ];
+      debug = true;
       imports = [
         inputs.rust-flake.flakeModules.default
         inputs.rust-flake.flakeModules.nixpkgs
       ];
-      debug = true;
 
-      perSystem = {self', ...}: {
-        devShells.default = self'.devShells.rust;
+      perSystem = {
+        self',
+        pkgs,
+        lib,
+        config,
+        ...
+      }: {
+        # nixpkgs.overlays = [
+        #   # Configure tailwind to enable all relevant plugins
+        #   (self: super: {
+        #     tailwindcss =
+        #       super.tailwindcss.overrideAttrs
+        #       (oa: {
+        #         plugins = [
+        #           pkgs.nodePackages."@tailwindcss/aspect-ratio"
+        #           pkgs.nodePackages."@tailwindcss/forms"
+        #           pkgs.nodePackages."@tailwindcss/language-server"
+        #           pkgs.nodePackages."@tailwindcss/line-clamp"
+        #           pkgs.nodePackages."@tailwindcss/typography"
+        #         ];
+        #       });
+        #   })
+        # ];
+
+        rust-project.src = lib.cleanSourceWith {
+          src = inputs.self; # The original, unfiltered source
+          filter = path: type:
+            (lib.hasSuffix "tailwind.css" path)
+            || (lib.hasInfix "/assets/" path)
+            || (config.rust-project.crane-lib.filterCargoSources path type);
+        };
+        rust-project.crates."backyardhost" = {
+          crane.args = {
+            buildInputs =
+              lib.optionals pkgs.stdenv.isLinux
+              (with pkgs; [
+                webkitgtk_4_1
+                xdotool
+                pkg-config
+                openssl
+              ]);
+
+            nativeBuildInputs = with pkgs; [
+              pkg-config
+              makeWrapper
+              tailwindcss
+              dioxus-cli
+            ];
+          };
+        };
+
+        # Dev Tools
+        devShells.default = pkgs.mkShell {
+          name = "backyardhost-shell";
+          inputsFrom = [
+            self'.devShells.rust
+          ];
+          packages = with pkgs; [
+            # Nix
+            nixd
+            alejandra
+            # Nats
+            nats-top
+            natscli
+            # Just
+            just
+          ];
+        };
         packages.default = self'.packages.backyardhost;
       };
     };
 }
-# perSystem = {pkgs, ...}: {
-#   devShells.default = pkgs.mkShell {
-#     nativeBuildInputs = with pkgs; [
-#       # Nix
-#       nixd
-#       alejandra
-#       # Just
-#       just
-#       just-lsp
-#       # Rust toolchain
-#       rustc
-#       cargo
-#       rust-analyzer
-#       clippy
-#       rustfmt
-#       cargo-leptos
-#       # NATS
-#       nats-top
-#       natscli
-#     ];
-#     RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
-#     shellHook = ''
-#       echo "Backyardhost Development Environment"
-#       echo "Run 'just' to see available recipes"
-#     '';
-#   };
-# };
-
