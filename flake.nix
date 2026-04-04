@@ -77,13 +77,10 @@
             self'.devShells.rust
           ];
           packages = with pkgs; [
-            # Nix
             nixd
             alejandra
-            # Nats
             nats-top
             natscli
-            # Just
             just
           ];
         };
