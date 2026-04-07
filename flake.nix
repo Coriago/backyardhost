@@ -70,13 +70,13 @@
           ];
         };
 
+        # Temporary until 0.7.5 is in unstable
         nixpkgs.overlays = [
           (final: prev: {
             dioxus-cli = prev.rustPlatform.buildRustPackage (
               let
                 old = prev.dioxus-cli;
-              in
-              {
+              in {
                 pname = "dioxus-cli";
                 version = "0.7.5";
                 src = prev.fetchCrate {
@@ -110,11 +110,11 @@
                 postInstall = ''
                   wrapProgram $out/bin/dx \
                     --suffix PATH : ${
-                      prev.lib.makeBinPath [
-                        prev.esbuild
-                        prev.wasm-bindgen-cli_0_2_114
-                      ]
-                    }
+                    prev.lib.makeBinPath [
+                      prev.esbuild
+                      prev.wasm-bindgen-cli_0_2_114
+                    ]
+                  }
                 '';
                 inherit (old) meta;
               }
