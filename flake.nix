@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     rust-flake.url = "github:juspay/rust-flake";
@@ -26,23 +26,7 @@
         config,
         ...
       }: {
-        # nixpkgs.overlays = [
-        #   # Configure tailwind to enable all relevant plugins
-        #   (self: super: {
-        #     tailwindcss =
-        #       super.tailwindcss.overrideAttrs
-        #       (oa: {
-        #         plugins = [
-        #           pkgs.nodePackages."@tailwindcss/aspect-ratio"
-        #           pkgs.nodePackages."@tailwindcss/forms"
-        #           pkgs.nodePackages."@tailwindcss/language-server"
-        #           pkgs.nodePackages."@tailwindcss/line-clamp"
-        #           pkgs.nodePackages."@tailwindcss/typography"
-        #         ];
-        #       });
-        #   })
-        # ];
-
+        # Rust Build
         rust-project.src = lib.cleanSourceWith {
           src = inputs.self; # The original, unfiltered source
           filter = path: type:
@@ -69,6 +53,7 @@
             ];
           };
         };
+        packages.default = self'.packages.backyardhost;
 
         # Dev Tools
         devShells.default = pkgs.mkShell {
@@ -84,7 +69,58 @@
             just
           ];
         };
-        packages.default = self'.packages.backyardhost;
+
+        nixpkgs.overlays = [
+          (final: prev: {
+            dioxus-cli = prev.rustPlatform.buildRustPackage (
+              let
+                old = prev.dioxus-cli;
+              in
+              {
+                pname = "dioxus-cli";
+                version = "0.7.5";
+                src = prev.fetchCrate {
+                  pname = "dioxus-cli";
+                  version = "0.7.5";
+                  hash = "sha256-iAwR43SwmOBvuHa9qZBJLCjyhQSj/XgDx0jkWR+lgrE=";
+                };
+                cargoHash = "sha256-JS5/7hQhgN2gbMmLY2zD2GE/Ony8AAHAzj7Ituj6l90=";
+                buildFeatures = [
+                  "no-downloads"
+                  "disable-telemetry"
+                ];
+                env = {
+                  OPENSSL_NO_VENDOR = 1;
+                };
+                nativeBuildInputs = with prev; [
+                  pkg-config
+                  cacert
+                  makeWrapper
+                ];
+                buildInputs = with prev; [
+                  openssl
+                ];
+                nativeCheckInputs = with prev; [
+                  rustfmt
+                ];
+                checkFlags = [
+                  "--skip=serve::proxy::test"
+                  "--skip=test_harnesses::run_harness"
+                ];
+                postInstall = ''
+                  wrapProgram $out/bin/dx \
+                    --suffix PATH : ${
+                      prev.lib.makeBinPath [
+                        prev.esbuild
+                        prev.wasm-bindgen-cli_0_2_114
+                      ]
+                    }
+                '';
+                inherit (old) meta;
+              }
+            );
+          })
+        ];
       };
     };
 }
