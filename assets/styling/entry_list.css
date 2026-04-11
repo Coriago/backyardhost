@@ -1,0 +1,47 @@
+#entry-list {
+  width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 30px;
+  background-color: #1e222d;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 50px;
+}
+
+#entry-list h4 {
+  margin: 0px 0px 15px 0px;
+}
+
+.entry-item {
+  padding: 12px 0px;
+  border-bottom: 1px solid #2e3444;
+}
+
+.entry-item:last-child {
+  border-bottom: none;
+}
+
+.entry-name {
+  font-weight: bold;
+  font-size: 1em;
+  margin-bottom: 3px;
+}
+
+.entry-email {
+  font-size: 0.85em;
+  color: #a0a0a0;
+  margin-bottom: 5px;
+}
+
+.entry-message {
+  font-size: 0.95em;
+  line-height: 1.4;
+}
+
+.empty-list {
+  text-align: center;
+  color: #a0a0a0;
+  padding: 20px 0px;
+  font-style: italic;
+}

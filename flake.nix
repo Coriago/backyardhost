@@ -5,6 +5,10 @@
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     rust-flake.url = "github:juspay/rust-flake";
     rust-flake.inputs.nixpkgs.follows = "nixpkgs";
+    mcp-servers-nix = {
+      url = "github:natsukium/mcp-servers-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs:
@@ -17,6 +21,7 @@
       imports = [
         inputs.rust-flake.flakeModules.default
         inputs.rust-flake.flakeModules.nixpkgs
+        inputs.mcp-servers-nix.flakeModule
       ];
 
       perSystem = {
@@ -55,11 +60,23 @@
         };
         packages.default = self'.packages.backyardhost;
 
+        # MCP Servers
+        mcp-servers = {
+          programs = {
+            playwright.enable = true;
+          };
+          flavors = {
+            opencode.enable = true;
+          };
+        };
+
         # Dev Tools
         devShells.default = pkgs.mkShell {
           name = "backyardhost-shell";
           inputsFrom = [
             self'.devShells.rust
+            config.mcp-servers.devShell
+            # self'.mcp-servers.devShell
           ];
           packages = with pkgs; [
             nixd
@@ -67,6 +84,8 @@
             nats-top
             natscli
             just
+            # playwright-driver.browsers
+            # nodejs_22
           ];
         };
 

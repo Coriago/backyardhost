@@ -1,11 +1,13 @@
-use crate::components::{Echo, Hero};
+use crate::components::{ContactForm, EntryList};
 use dioxus::prelude::*;
 
-/// The Home page component that will be rendered when the current route is `[Route::Home]`
 #[component]
 pub fn Home() -> Element {
+    let refresh_trigger = use_signal(|| 0u64);
+    use_context_provider(|| refresh_trigger);
+
     rsx! {
-        Hero {}
-        Echo {}
+        ContactForm {}
+        EntryList {}
     }
 }
